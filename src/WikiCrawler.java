@@ -59,11 +59,16 @@ Then the returned list must be
      */
     public ArrayList<String> extractLinks(String doc)
     {
-        for(int i=0; i<topics.size(); i++){
-            doc.matches(topics.get(i));
+        ArrayList<String> matches = new ArrayList<>();
+        Matcher m = Pattern.compile("([\\/](wiki)+\\/)(([^:#]*?)(\"))")
+                .matcher(doc);
+        while (m.find()) {
+            matches.add(m.group().substring(0,m.group().length()-1));
         }
-        return null;
+
+        return matches;
     }
+  
     /*
 
     crawl() This method should construct the web graph over following pages: If seedUrl does

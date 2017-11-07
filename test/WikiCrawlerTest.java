@@ -13,11 +13,18 @@ public class WikiCrawlerTest {
     @Test
     public void constructorTest() throws FileNotFoundException {
         ArrayList<String> list = new ArrayList<>();
-        list.add("physics");
-        list.add("gravity");
+        list.add("Cyclones");
+        list.add("Iowa");
 
-        WikiCrawler wiki = new WikiCrawler("/wiki/Physics",10, list, "File.txt");
+        WikiCrawler wiki = new WikiCrawler("/wiki/Iowa_State_University",10, list, "File.txt");
         String content = new Scanner(new File("File.txt")).useDelimiter("\\Z").next();
-        wiki.extractLinks(content);
+        ArrayList<String> list2 = wiki.extractLinks(content);
+        printArrayList(list2);
+    }
+
+    public void printArrayList(ArrayList<String> lists){
+        for(String list:lists){
+            System.out.println(list);
+        }
     }
 }
