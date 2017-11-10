@@ -30,7 +30,7 @@ public class WikiCrawler
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
             BufferedWriter bw = new BufferedWriter(new FileWriter(file));
 
-            String inputLine ="hi";
+            String inputLine =null;
             while ((inputLine = br.readLine()) != null)
                 bw.write(inputLine);
             br.close();
@@ -59,16 +59,21 @@ Then the returned list must be
      */
     public ArrayList<String> extractLinks(String doc)
     {
+        String[] strings = doc.split("<p>");
         ArrayList<String> matches = new ArrayList<>();
-        Matcher m = Pattern.compile("([\\/](wiki)+\\/)(([^:#]*?)(\"))")
-                .matcher(doc);
-        while (m.find()) {
-            matches.add(m.group().substring(0,m.group().length()-1));
+        int numFound =0;
+        for(int i =1; i<strings.length; i++) {
+            Matcher m = Pattern.compile("([\\/](wiki)+\\/)(([^:#]*?)(\"))")
+                    .matcher(strings[i]);
+            while (m.find()) {
+                matches.add(m.group().substring(0, m.group().length() - 1));
+                numFound++;
+                if(max == numFound+1){break;}
+            }
+            if(max == numFound+1){break;}
         }
-
         return matches;
     }
-  
     /*
 
     crawl() This method should construct the web graph over following pages: If seedUrl does
