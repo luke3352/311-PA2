@@ -9,10 +9,7 @@
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.LinkedList;
-import java.util.Scanner;
+import java.util.*;
 
 
 public class GraphProcessor
@@ -87,19 +84,28 @@ public class GraphProcessor
         ArrayList<String> path = new ArrayList<>();
         // Mark the current node as visited and enqueue it
         Hashtable<String,Integer> visited = new Hashtable<>();
+        //seeding the visited list
+        Set<String> set = graph.adjList.keySet();
+        Iterator<String> i = set.iterator();
+        while(i.hasNext()){
+            visited.put(i.next(),0);
+        }
         visited.put(u,1);
         queue.add(u);
+
 
         while (queue.size() != 0)
         {
             // Dequeue a vertex from queue and print it
             u = queue.poll();
             path.add(u);
-
+            if(u.equals(v)){return path;}
             // Get all adjacent vertices of the dequeued vertex
             // If a adjacent has not been visited, then mark it
             // visited and enqueue it
             ArrayList<String> adj = graph.adjList.get(u);
+
+
             for(String edge:adj)
             {
                 if (visited.get(edge)==0)
@@ -108,8 +114,9 @@ public class GraphProcessor
                     queue.add(edge);
                 }
             }
-        }
-        return path;
+        }//if path is not found
+        ArrayList<String> list = new ArrayList<>();
+        return list;
     }
 
     public int diameter()
