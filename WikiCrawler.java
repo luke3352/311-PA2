@@ -8,6 +8,7 @@
 //  (i.e., you may include java.util.ArrayList etc. here, but not junit, apache commons, google guava, etc.)
 
 import java.io.*;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.regex.*;
@@ -17,27 +18,16 @@ public class WikiCrawler
     static final String BASE_URL = "https://en.wikipedia.org";
     ArrayList<String> topics;
     int max;
+    String fileName;
+    String seedUrl;
     // other member fields and methods
 
     public WikiCrawler(String seedUrl, int max, ArrayList<String> topics, String fileName)
     {
         this.topics = topics;
         this.max = max;
-        try {
-            File file = new File(fileName);
-            URL url = new URL(BASE_URL + seedUrl);
-            InputStream is = url.openStream();
-            BufferedReader br = new BufferedReader(new InputStreamReader(is));
-            BufferedWriter bw = new BufferedWriter(new FileWriter(file));
-
-            String inputLine =null;
-            while ((inputLine = br.readLine()) != null)
-                bw.write(inputLine);
-            br.close();
-        }
-        catch(Exception e){
-            System.out.println("Error "+e.toString());
-        }
+        this.fileName = fileName;
+        this.seedUrl = seedUrl;
     }
 
     // NOTE: extractLinks takes the source HTML code, NOT a URL
@@ -66,7 +56,7 @@ Then the returned list must be
             Matcher m = Pattern.compile("([\\/](wiki)+\\/)(([^:#]*?)(\"))")
                     .matcher(strings[i]);
             while (m.find()) {
-                matches.add(m.group().substring(0, m.group().length() - 1));
+                matches.add(seedUrl + " " +m.group().substring(0, m.group().length() - 1));
                 numFound++;
                 if(max == numFound+1){break;}
             }
@@ -100,7 +90,51 @@ file
 
     public void crawl()
     {
-        // implementation
+        ArrayList<String> links = new ArrayList<>();
+        ArrayList<String> links2 = new ArrayList<>();
+        File file = new File(fileName);
+        try {
+
+            BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+            String html = gethtml();
+            links = extractLinks(html);
+            for(String link:links) {
+                bw.write(link+" ");
+            }
+
+            for(String link: links){
+                seedUrl = link.split(" ")[1];
+                html = gethtml();
+                links2 = extractLinks(html);
+                for(String link2:links2) {
+                    bw.write(link2+" ");
+                }
+            }
+
+        }
+        catch(Exception e){
+            System.out.println("Error "+e.toString());
+        }
+
+    }
+
+    private String gethtml(){
+        String html = null;
+        URL url = null;
+        try {
+            url = new URL(BASE_URL + seedUrl);
+            InputStream is = url.openStream();
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            String inputLine =null;
+            while ((inputLine = br.readLine()) != null){
+                html += inputLine;
+            }
+            br.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return html;
     }
 }
 
