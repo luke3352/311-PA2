@@ -1,9 +1,8 @@
+import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.Scanner;
 
 import static org.junit.Assert.assertTrue;
 
@@ -15,8 +14,7 @@ public class WikiCrawlerTest {
     @Test
     public void constructorTest() throws FileNotFoundException {
         ArrayList<String> list = new ArrayList<>();
-        list.add("Cyclones");
-        list.add("Iowa");
+        list.add("Complex");
 
         WikiCrawler wiki = new WikiCrawler("/wiki/Complexity_theory",20, list, "File.txt");
 

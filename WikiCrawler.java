@@ -20,6 +20,7 @@ public class WikiCrawler
     int max;
     String fileName;
     String seedUrl;
+    int requestCount =0;
     // other member fields and methods
 
     public WikiCrawler(String seedUrl, int max, ArrayList<String> topics, String fileName)
@@ -56,11 +57,21 @@ Then the returned list must be
             Matcher m = Pattern.compile("([\\/](wiki)+\\/)(([^:#]*?)(\"))")
                     .matcher(strings[i]);
             while (m.find()) {
-                matches.add(seedUrl + " " +m.group().substring(0, m.group().length() - 1));
-                numFound++;
-                if(max == numFound+1){break;}
+                if(topics.size() > 0) {
+                    for (String topic : topics) {
+                        if (m.group().contains(topic)) {
+                            matches.add(seedUrl + " " + m.group().substring(0, m.group().length() - 1));
+                            numFound++;
+                        }
+                    }
+                }
+                else {
+                    matches.add(seedUrl + " " + m.group().substring(0, m.group().length() - 1));
+                    numFound++;
+                }
+                if (max == numFound) {break;}
             }
-            if(max == numFound+1){break;}
+            if (max == numFound) {break;}
         }
         return matches;
     }
@@ -100,6 +111,7 @@ file
             links = extractLinks(html);
             for(String link:links) {
                 bw.write(link+" ");
+                bw.newLine();
             }
 
             for(String link: links){
@@ -108,9 +120,10 @@ file
                 links2 = extractLinks(html);
                 for(String link2:links2) {
                     bw.write(link2+" ");
+                    bw.newLine();
                 }
             }
-
+            bw.close();
         }
         catch(Exception e){
             System.out.println("Error "+e.toString());
@@ -119,6 +132,15 @@ file
     }
 
     private String gethtml(){
+        if(requestCount%50==0){
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        requestCount++;
+
         String html = null;
         URL url = null;
         try {
