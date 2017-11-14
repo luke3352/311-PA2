@@ -37,7 +37,6 @@ public class GraphProcessor {
             Scanner sc = new Scanner(file);
             if (sc.hasNextLine()) {
                 vertices = Integer.parseInt(sc.next());
-                System.out.println(vertices);
             }
 
             while (sc.hasNextLine()){
@@ -83,11 +82,13 @@ public class GraphProcessor {
         visited.add(u);
         queue.add(parent);
         Node current = null;
+        boolean foundPath = false;
 
         while (!queue.isEmpty()) {
             // Dequeue a vertex from queue and print it
             current = queue.poll();
             if (current.val.equals(v)) {
+                foundPath = true;
                 break;
             }
             // Get all adjacent vertices of the dequeued vertex
@@ -102,8 +103,9 @@ public class GraphProcessor {
             }
         }
 
-        while (current != null) {
+        while (foundPath && current != null) {
             path.add(current.val);
+            current = current.parent;
         }
         Collections.reverse(path);
         return path;
@@ -121,4 +123,8 @@ public class GraphProcessor {
         return 0;
     }
 
+    public static void main(String args[]) {
+        GraphProcessor gp = new GraphProcessor("./GraphData.Txt");
+        System.out.println(gp.bfsPath("Ames","Chicago"));
+    }
 }
