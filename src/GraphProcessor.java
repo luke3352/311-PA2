@@ -9,106 +9,103 @@
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.LinkedList;
-import java.util.Scanner;
+import java.util.*;
 
 
-public class GraphProcessor
-{
+public class GraphProcessor {
 
-    static class Graph
-    {
-        int V;
-        Hashtable<String, ArrayList<String>> adjList = new Hashtable<>();
+    class Node {
+        String val;
+        Node parent;
 
-        // constructor
-        Graph(int V)
-        {
-            this.V = V;
+        public Node (String val, Node parent) {
+            this.val = val;
+            this.parent = parent;
         }
     }
 
-    // Adds an edge to an undirected graph
-    static void addEdge(Graph graph, String src, String dest)
-    {
-        // Add an edge from src to dest.
-        if(graph.adjList.containsKey(src)) {
-            graph.adjList.get(src).add(dest);
-        }
-        else{ ArrayList<String> list = new ArrayList<>();
-            list.add(dest);
-            graph.adjList.put(src,list);
-        }
+    private Hashtable<String, ArrayList<String>> adjList;
+    private int vertices;
 
-    }
-
-    // other member fields and methods
-    int verticies;
-    Graph graph;
     // NOTE: graphData should be an absolute file path
-    public GraphProcessor(String graphData)
-    {
+    public GraphProcessor(String graphData) {
+        adjList = new Hashtable<>();
+        vertices = 0;
         File file = new File(graphData);
 
         try {
             Scanner sc = new Scanner(file);
-            boolean firstLine = true;
-            while(sc.hasNextLine()){
-                if(firstLine ==true){
-                    verticies = Integer.parseInt(sc.next());
-                    System.out.println(verticies);
-                    firstLine = false;
-                    graph = new Graph(verticies);
-                }
-                else addEdge(graph,sc.next(), sc.next());
+            if (sc.hasNextLine()) {
+                vertices = Integer.parseInt(sc.next());
+                System.out.println(vertices);
+            }
+
+            while (sc.hasNextLine()){
+                addEdge(sc.next(), sc.next());
             }
             sc.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-
-
     }
+
+    // Adds an edge to an undirected graph
+    private void addEdge(String src, String dest) {
+        // Add an edge from src to dest.
+        if (adjList.containsKey(src)) {
+           adjList.get(src).add(dest);
+        } else {
+            ArrayList<String> list = new ArrayList<>();
+            list.add(dest);
+            adjList.put(src, list);
+        }
+    }
+
     //number of edges going out of a node
-    public int outDegree(String v)
-    {
-        return graph.adjList.get(v).size();
+    public int outDegree(String v) {
+        if (adjList.containsKey(v)) {
+            return adjList.get(v).size();
+        } else {
+            return 0;
+        }
     }
 
-    public ArrayList<String> bfsPath(String u, String v)
-    {
+    public ArrayList<String> bfsPath(String u, String v) {
         // Mark all the vertices as not visited(By default
         // set as false)
 
         // Create a queue for BFS
-        LinkedList<String> queue = new LinkedList<>();
+        LinkedList<Node> queue = new LinkedList<>();
         ArrayList<String> path = new ArrayList<>();
         // Mark the current node as visited and enqueue it
-        Hashtable<String,Integer> visited = new Hashtable<>();
-        visited.put(u,1);
-        queue.add(u);
+        HashSet<String> visited = new HashSet<>();
+        Node parent = new Node(u, null);
+        visited.add(u);
+        queue.add(parent);
+        Node current = null;
 
-        while (queue.size() != 0)
-        {
+        while (!queue.isEmpty()) {
             // Dequeue a vertex from queue and print it
-            u = queue.poll();
-            path.add(u);
-
+            current = queue.poll();
+            if (current.val.equals(v)) {
+                break;
+            }
             // Get all adjacent vertices of the dequeued vertex
             // If a adjacent has not been visited, then mark it
             // visited and enqueue it
-            ArrayList<String> adj = graph.adjList.get(u);
-            for(String edge:adj)
-            {
-                if (visited.get(edge)==0)
-                {
-                    visited.put(u,1);
-                    queue.add(edge);
+            ArrayList<String> adj = adjList.get(current.val);
+            for(String edge: adj) {
+                if (!visited.contains(edge)) {
+                    visited.add(edge);
+                    queue.add(new Node(edge, current));
                 }
             }
         }
+
+        while (current != null) {
+            path.add(current.val);
+        }
+        Collections.reverse(path);
         return path;
     }
 
