@@ -47,32 +47,73 @@ Then the returned list must be
 /wiki/Science, /wiki/Computation, /wiki/Procedure_(computer_science),
 /wiki/Algorithm, /wiki/Information, /wiki/CiteSeerX, /wiki/Charles_Babbage
 
-     */
+     *///TODO fix topics input
     public ArrayList<String> extractLinks(String doc)
-    {
+    {   int endScan=0;
+        for (int i = 0; i<topics.size(); i++) {
+            if(!topics.get(i).substring(0,5).equals("/wiki")){
+                topics.set(i,"/wiki/"+topics.get(i));
+            }
+        }
         String[] strings = doc.split("<p>");
-        System.out.println(strings.length);
+        for(int i =1; i<strings.length; i++){
+            if(strings[i].contains("NewPP")){
+                strings[i] = strings[i].split("NewPP")[0];
+                endScan = i+1;
+            }
+        }
+        //System.out.println(strings.length);
         ArrayList<String> matches = new ArrayList<>();
         int numFound =0;
-        for(int i =1; i<strings.length; i++) {
+        boolean firstTime = false;
+        if(topics.size() == 0){
+            firstTime = true;
+        }
+        //have to make sure duplicates don't get it
+        Boolean[] topicMatched = new Boolean[topics.size()];
+        for(int j =0; j<topics.size(); j++){
+            topicMatched[j] = false;
+        }
+        for(int i =1; i<endScan; i++) {
             Matcher m = Pattern.compile("([\\/](wiki)+\\/)(([^:#]*?)(\"))")
                     .matcher(strings[i]);
             while (m.find()) {
-                if(topics.size() > 0) {
-                    for (String topic : topics) {
-                        if (m.group().contains(topic)) {
+                //url can't equal page we are on
+                if(!seedUrl.equals(m.group().substring(0, m.group().length() - 1))){
+                    if (!firstTime) {
+                        int num = 0;
+                        for (String topic : topics) {
+
+                            if (topic.equals(m.group().substring(0, m.group().length() - 1))) {
+                                //System.out.println("TOPIC: "+topic);
+                                //System.out.println("M: "+m.group().substring(0, m.group().length() - 1));
+                                if (topicMatched[num] == false) {
+                                    matches.add(seedUrl + " " + m.group().substring(0, m.group().length() - 1));
+                                    numFound++;
+                                    topicMatched[num] = true;
+                                }
+                            }
+                            num++;
+                        }
+                    } else {
+                        boolean isNew = true;
+                        for (String topic : topics) {
+                            if (topic.equals(m.group().substring(0, m.group().length() - 1))) {
+                                isNew = false;
+                                break;
+                            }
+                        }
+                        if (isNew) {
                             matches.add(seedUrl + " " + m.group().substring(0, m.group().length() - 1));
+                            topics.add(m.group().substring(0, m.group().length() - 1));
                             numFound++;
                         }
+
                     }
                 }
-                else {
-                    matches.add(seedUrl + " " + m.group().substring(0, m.group().length() - 1));
-                    numFound++;
-                }
-                if (max == numFound) {break;}
+                if (max == numFound+1) {break;}
             }
-            if (max == numFound) {break;}
+            if (max == numFound+1) {break;}
         }
         return matches;
     }
@@ -117,24 +158,27 @@ file
                 bw.write(link+" ");
                 bw.newLine();
             }
-            if(topics.size()==0){
-                for(String link: links){
-                    topics.add(link.split(" ")[1]);
-                }
-            }
+
+            File file2 = new File("html.txt");
+            BufferedWriter bw2 = new BufferedWriter(new FileWriter(file2));
             for(String link: links){
                 seedUrl = link.split(" ")[1];
                 html = gethtml();
+                bw2.write(html);
+                bw2.newLine();
+                bw2.newLine();
+                bw2.newLine();
                 links2 = extractLinks(html);
                 for(String link2:links2) {
                     bw.write(link2+" ");
                     bw.newLine();
+
                 }
             }
             bw.close();
         }
         catch(Exception e){
-            System.out.println("Error "+e.toString());
+            e.printStackTrace();
         }
 
     }
@@ -157,7 +201,7 @@ file
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
             String inputLine =null;
             while ((inputLine = br.readLine()) != null){
-                html += inputLine;
+                html += inputLine+"\n";
             }
             br.close();
 
