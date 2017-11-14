@@ -51,6 +51,7 @@ Then the returned list must be
     public ArrayList<String> extractLinks(String doc)
     {
         String[] strings = doc.split("<p>");
+        System.out.println(strings.length);
         ArrayList<String> matches = new ArrayList<>();
         int numFound =0;
         for(int i =1; i<strings.length; i++) {
@@ -109,11 +110,18 @@ file
             BufferedWriter bw = new BufferedWriter(new FileWriter(file));
             String html = gethtml();
             links = extractLinks(html);
+            bw.write(links.size()+"");
+            bw.newLine();
             for(String link:links) {
+
                 bw.write(link+" ");
                 bw.newLine();
             }
-
+            if(topics.size()==0){
+                for(String link: links){
+                    topics.add(link.split(" ")[1]);
+                }
+            }
             for(String link: links){
                 seedUrl = link.split(" ")[1];
                 html = gethtml();
