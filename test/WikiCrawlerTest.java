@@ -14,7 +14,7 @@ public class WikiCrawlerTest {
     @Test
     public void constructorTest() throws FileNotFoundException {
         ArrayList<String> list = new ArrayList<>();
-        //list.add("Complex_systems");
+
 
         WikiCrawler wiki = new WikiCrawler("/wiki/Complexity_theory",20, list, "File.txt");
 
