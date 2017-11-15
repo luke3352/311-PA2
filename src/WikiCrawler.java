@@ -10,17 +10,15 @@
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.*;
 import java.util.regex.*;
 
 public class WikiCrawler
 {
     static final String BASE_URL = "https://en.wikipedia.org";
     ArrayList<String> topics;
-    ArrayList<String> linkTopics = new ArrayList<>();
     int max;
-    HashSet<String> hashTopics = new HashSet<>();
+    HashMap<String,Integer> hashTopics = new HashMap<>();
     String fileName;
     String seedUrl;
     String OGSeedUrl;
@@ -55,9 +53,7 @@ Then the returned list must be
      *///TODO fix topics input
     public ArrayList<String> extractLinks(String doc)
     {
-        if(topics.size() != 0){
-            topicsGiven = true;
-        }
+
         ArrayList<String> matches = new ArrayList<>();
 
             int endScan = 0;
@@ -74,47 +70,40 @@ Then the returned list must be
 
             int numFound = 0;
             boolean firstTime = false;
-            if (linkTopics.size() == 0) {
+            if (hashTopics.size() == 0) {
                 firstTime = true;
             }
-            //have to make sure duplicates don't get it
-            Boolean[] topicMatched = new Boolean[linkTopics.size()];
-            for (int j = 0; j < linkTopics.size(); j++) {
-                topicMatched[j] = false;
+            boolean[] wasFound = new boolean[hashTopics.size()];
+            for(int i =0; i<hashTopics.size(); i++){
+                wasFound[i] = false;
             }
+
             for (int i = 1; i < endScan; i++) {
                 Matcher m = Pattern.compile("([\\/](wiki)+\\/)(([^:#]*?)(\"))")
                         .matcher(strings[i]);
                 while (m.find()) {
+                    String found = m.group().substring(0, m.group().length() - 1);
                     //url can't equal page we are on
-                    if (!seedUrl.equals(m.group().substring(0, m.group().length() - 1))) {
+                    if (!seedUrl.equals(found)) {
                         if (!firstTime) {
-                            int num = 0;
-                            for (String linkTopic : linkTopics) {
-
-                                if (linkTopic.equals(m.group().substring(0, m.group().length() - 1))) {
-                                    //System.out.println("TOPIC: "+topic);
-                                    //System.out.println("M: "+m.group().substring(0, m.group().length() - 1));
-                                    if (topicMatched[num] == false) {
-                                        matches.add(seedUrl + " " + m.group().substring(0, m.group().length() - 1));
-                                        numFound++;
-                                        topicMatched[num] = true;
-                                    }
+                            if (hashTopics.containsKey(found)) {
+                                //check if duplicate
+                                if (wasFound[hashTopics.get(found)]==false) {
+                                    matches.add(seedUrl + " " + found);
+                                    numFound++;
+                                    wasFound[hashTopics.get(found)]=true;
                                 }
-                                num++;
                             }
                         } else {
                             boolean isNew = true;
-                            for (String linkTopic : linkTopics) {
-                                if (linkTopic.equals(m.group().substring(0, m.group().length() - 1))) {
+
+                                if (hashTopics.containsKey(found)) {
                                     isNew = false;
-                                    break;
                                 }
-                            }
+
                             if (isNew) {
                                 matches.add(seedUrl + " " + m.group().substring(0, m.group().length() - 1));
-                                linkTopics.add(m.group().substring(0, m.group().length() - 1));
-                                
+                                hashTopics.put(found,hashTopics.size());
                                 numFound++;
                             }
 
@@ -157,7 +146,7 @@ file
      */
 
     public void crawl()
-    {   OGSeedUrl = seedUrl;
+    {
         ArrayList<String> links = new ArrayList<>();
         ArrayList<String> links2 = new ArrayList<>();
         File file = new File(fileName);
