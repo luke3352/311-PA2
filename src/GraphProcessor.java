@@ -9,6 +9,7 @@
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.lang.reflect.Array;
 import java.util.*;
 
 
@@ -25,18 +26,23 @@ public class GraphProcessor {
     }
 
     private Hashtable<String, ArrayList<String>> adjList;
-    private int vertices;
+    private ArrayList<String> vertices;
+    private int numOfVertices;
+    private int diameter;
+    private double[][] dist;
 
     // NOTE: graphData should be an absolute file path
     public GraphProcessor(String graphData) {
         adjList = new Hashtable<>();
-        vertices = 0;
+        vertices = new ArrayList<>();
+        numOfVertices = 0;
+        diameter = 0;
         File file = new File(graphData);
 
         try {
             Scanner sc = new Scanner(file);
             if (sc.hasNextLine()) {
-                vertices = Integer.parseInt(sc.next());
+                numOfVertices = Integer.parseInt(sc.next());
             }
 
             while (sc.hasNextLine()){
@@ -46,11 +52,67 @@ public class GraphProcessor {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+
+        // initialize distance array since numOfVertices has been now set
+        dist = new double[numOfVertices][numOfVertices];
+
+        if (checkIfStronglyConnected()) {
+            // Use flyod warshall algorithm to calculate the distances
+
+            // initialize the distance matrix
+            for (int i = 0; i < numOfVertices; i++) {
+                for (int j = 0; j < numOfVertices; j++) {
+                    if (i == j) {
+                        dist[i][j] = 0;
+                    } else {
+                        dist[i][j] = adjList.get(vertices.get(i)).contains(vertices.get(j)) ? 1 : Double.POSITIVE_INFINITY;
+                    }
+                }
+            }
+
+            for (int k = 0; k < numOfVertices; k++) {
+                // Pick all vertices as source one by one
+                for (int i = 0; i < numOfVertices; i++) {
+                    // Pick all vertices as destination for the
+                    // above picked source
+                    for (int j = 0; j < numOfVertices; j++) {
+                        // If vertex k is on the shortest path from
+                        // i to j, then update the value of dist[i][j]
+                        if (dist[i][k] + dist[k][j] < dist[i][j]) {
+                            dist[i][j] = dist[i][k] + dist[k][j];
+                        }
+                        if (dist[i][j] > diameter && dist[i][j] != Double.POSITIVE_INFINITY) {
+                            diameter = (int) dist[i][j];
+                        }
+                    }
+                }
+            }
+            for (int i=0; i<numOfVertices; i++)
+            {
+                for (int j=0; j<numOfVertices; j++)
+                {
+                        System.out.print(dist[i][j]+"   ");
+                }
+                System.out.println();
+            }
+        } else {
+            // if graph is not strongly connected
+            // return 2n
+            diameter = 2*numOfVertices;
+        }
     }
 
     // Adds an edge to an undirected graph
     private void addEdge(String src, String dest) {
         // Add an edge from src to dest.
+        if (!vertices.contains(src)) {
+            vertices.add(src);
+        }
+
+        if (!vertices.contains(dest)) {
+            vertices.add(dest);
+        }
+
         if (adjList.containsKey(src)) {
            adjList.get(src).add(dest);
         } else {
@@ -111,10 +173,76 @@ public class GraphProcessor {
         return path;
     }
 
-    public int diameter()
-    {
-        // implementation
-        return 0;
+    private void dfsHelper(String v, HashSet<String> hs, Hashtable<String, ArrayList<String>> graph) {
+        if (v == null) {
+            return;
+        }
+        for (String u: graph.get(v)) {
+            if (!hs.contains(u)) {
+                hs.add(u);
+                dfsHelper(u, hs, graph);
+            }
+        }
+    }
+
+    private Hashtable<String, ArrayList<String>> reverseGraph (Hashtable<String, ArrayList<String>> ht) {
+        Hashtable<String, ArrayList<String>> reverse = new Hashtable<>();
+        Set<String> keys = ht.keySet();
+        Iterator<String> iterator = keys.iterator();
+        while (iterator.hasNext()) {
+            String u = iterator.next();
+            for (String v: ht.get(u)) {
+                if (!reverse.containsKey(v)) {
+                    reverse.put(v, new ArrayList<>());
+                }
+                reverse.get(v).add(u);
+            }
+        }
+        return reverse;
+    }
+
+    private boolean checkIfStronglyConnected () {
+        // Kosarajus algorithm to check if graph is strongly connected
+        HashSet<String> visited = new HashSet<>();
+
+        // Step 2: Do DFS traversal starting from first vertex.
+        Set<String> s = adjList.keySet();
+        Iterator<String> c = s.iterator();
+        String random = c.next();
+        dfsHelper(random, visited, adjList);
+
+        // If DFS traversal doesn't visit all vertices, then
+        // return false.
+        if (visited.size() != numOfVertices) {
+            return false;
+        }
+
+        // Step 3: Create a reversed graph
+        Hashtable<String, ArrayList<String>> reverseGraph = reverseGraph(adjList);
+
+        // Step 4: Mark all the vertices as not visited (For
+        // second DFS)
+        visited = new HashSet<>();
+
+        // Step 5: Do DFS for reversed graph starting from
+        // first vertex. Staring Vertex must be same starting
+        // point of first DFS
+        s = reverseGraph.keySet();
+        c = s.iterator();
+        random = c.next();
+        dfsHelper(random, visited, reverseGraph);
+
+        // If all vertices are not visited in second DFS, then
+        // return false
+        if (visited.size() != numOfVertices) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public int diameter() {
+        return diameter;
     }
 
     public int centrality(String v)
@@ -125,6 +253,7 @@ public class GraphProcessor {
 
     public static void main(String args[]) {
         GraphProcessor gp = new GraphProcessor("./GraphData.Txt");
-        System.out.println(gp.bfsPath("Ames","Chicago"));
+        System.out.println(gp.bfsPath("Ames","Ames"));
+        System.out.println(gp.diameter());
     }
 }
