@@ -11,6 +11,7 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.regex.*;
 
 public class WikiCrawler
@@ -19,6 +20,7 @@ public class WikiCrawler
     ArrayList<String> topics;
     ArrayList<String> linkTopics = new ArrayList<>();
     int max;
+    HashSet<String> hashTopics = new HashSet<>();
     String fileName;
     String seedUrl;
     String OGSeedUrl;
@@ -112,6 +114,7 @@ Then the returned list must be
                             if (isNew) {
                                 matches.add(seedUrl + " " + m.group().substring(0, m.group().length() - 1));
                                 linkTopics.add(m.group().substring(0, m.group().length() - 1));
+                                
                                 numFound++;
                             }
 
@@ -184,7 +187,6 @@ file
                 }
             }//if there are topics
             else {
-
                 int topicsNum = 0;
                 for (String topic : topics) {
                     if (html.contains(topic)) {
@@ -198,6 +200,24 @@ file
                         bw.write(link);
                         bw.newLine();
 
+                    }
+                    for (String link : links) {
+                        seedUrl = link.split(" ")[1];
+                        html = gethtml();
+                        int topicsNum2 = 0;
+                        for (String topic : topics) {
+                            if (html.contains(topic)) {
+                                topicsNum2++;
+                            }
+                        }
+                        if (topics.size() == topicsNum2) {
+                            links2 = extractLinks(html);
+                            for (String link2 : links2) {
+                                bw.write(link2 + " ");
+                                bw.newLine();
+
+                            }
+                        }
                     }
                 }
                 else {bw.write("0"); bw.newLine();}
