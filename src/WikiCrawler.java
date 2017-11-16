@@ -50,7 +50,7 @@ Then the returned list must be
 /wiki/Science, /wiki/Computation, /wiki/Procedure_(computer_science),
 /wiki/Algorithm, /wiki/Information, /wiki/CiteSeerX, /wiki/Charles_Babbage
 
-     *///TODO fix topics input
+     */
     public ArrayList<String> extractLinks(String doc)
     {
 
@@ -168,9 +168,10 @@ file
                     seedUrl = link.split(" ")[1];
                     html = gethtml();
                     links2 = extractLinks(html);
+
                     for (String link2 : links2) {
                         bw.write(link2 + " ");
-                        bw.newLine();
+                         bw.newLine();
 
                     }
                 }
@@ -203,8 +204,7 @@ file
                             links2 = extractLinks(html);
                             for (String link2 : links2) {
                                 bw.write(link2 + " ");
-                                bw.newLine();
-
+                               bw.newLine();
                             }
                         }
                     }
