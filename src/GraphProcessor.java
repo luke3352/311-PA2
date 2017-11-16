@@ -87,13 +87,6 @@ public class GraphProcessor {
                 }
             }
         }
-        for (int i=0; i<numOfVertices; i++) {
-            for (int j=0; j<numOfVertices; j++)
-            {
-                System.out.print(dist[i][j]+"   ");
-            }
-            System.out.println();
-        }
     }
 
     // Adds an edge to an undirected graph
@@ -268,9 +261,17 @@ public class GraphProcessor {
     }
 
     public static void main(String args[]) {
+        TreeMap<Integer, String> outdegress = new TreeMap<>();
+
         GraphProcessor gp = new GraphProcessor("./File.Txt");
-        System.out.println(gp.bfsPath("/wiki/Category_theory","/wiki/Herman_Hollerith"));
+        for (String s: gp.vertices) {
+            outdegress.put(gp.centrality(s), s);
+//            System.out.println(s + " " + gp.outDegree(s));
+        }
+        System.out.println(outdegress);
+
+//        System.out.println(gp.bfsPath("/wiki/Category_theory","/wiki/Herman_Hollerith"));
         System.out.println(gp.diameter());
-        System.out.println(gp.centrality("/wiki/Computer_Science"));
+//        System.out.println(gp.centrality("/wiki/Computer_Science"));
     }
 }
