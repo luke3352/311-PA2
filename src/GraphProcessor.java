@@ -245,15 +245,26 @@ public class GraphProcessor {
         return diameter;
     }
 
-    public int centrality(String v)
-    {
-        // implementation
-        return 0;
+    public int centrality(String v) {
+        int centrality = 0;
+        if (adjList.containsKey(v)) {
+            for (int i=0; i < numOfVertices; i++) {
+                for (int j=0; j < numOfVertices; j++) {
+                    int index = vertices.indexOf(v);
+                    if (i != j && dist[i][j] == dist[i][index] + dist[index][j]) {
+                        centrality++;
+                    }
+                }
+            }
+        }
+
+        return centrality;
     }
 
     public static void main(String args[]) {
         GraphProcessor gp = new GraphProcessor("./GraphData.Txt");
         System.out.println(gp.bfsPath("Ames","Ames"));
         System.out.println(gp.diameter());
+        System.out.println(gp.centrality("Ames"));
     }
 }
