@@ -10,7 +10,7 @@
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.regex.*;
 
 public class WikiCrawler
@@ -18,9 +18,12 @@ public class WikiCrawler
     static final String BASE_URL = "https://en.wikipedia.org";
     ArrayList<String> topics;
     int max;
+    HashMap<String,Integer> hashTopics = new HashMap<>();
     String fileName;
     String seedUrl;
+    String OGSeedUrl;
     int requestCount =0;
+    private boolean topicsGiven=false;
     // other member fields and methods
 
     public WikiCrawler(String seedUrl, int max, ArrayList<String> topics, String fileName)
@@ -47,32 +50,75 @@ Then the returned list must be
 /wiki/Science, /wiki/Computation, /wiki/Procedure_(computer_science),
 /wiki/Algorithm, /wiki/Information, /wiki/CiteSeerX, /wiki/Charles_Babbage
 
-     */
+     *///TODO fix topics input
     public ArrayList<String> extractLinks(String doc)
     {
-        String[] strings = doc.split("<p>");
+
         ArrayList<String> matches = new ArrayList<>();
-        int numFound =0;
-        for(int i =1; i<strings.length; i++) {
-            Matcher m = Pattern.compile("([\\/](wiki)+\\/)(([^:#]*?)(\"))")
-                    .matcher(strings[i]);
-            while (m.find()) {
-                if(topics.size() > 0) {
-                    for (String topic : topics) {
-                        if (m.group().contains(topic)) {
-                            matches.add(seedUrl + " " + m.group().substring(0, m.group().length() - 1));
-                            numFound++;
+
+            int endScan = 0;
+            //we only want to extract links after <p>
+            String[] strings = doc.split("<p>");
+            //stop extracting links when NewPP is seen
+            for (int i = 1; i < strings.length; i++) {
+                if (strings[i].contains("NewPP")) {
+                    strings[i] = strings[i].split("NewPP")[0];
+                    endScan = i + 1;
+                }
+            }
+            //System.out.println(strings.length);
+
+            int numFound = 0;
+            boolean firstTime = false;
+            if (hashTopics.size() == 0) {
+                firstTime = true;
+            }
+            boolean[] wasFound = new boolean[hashTopics.size()];
+            for(int i =0; i<hashTopics.size(); i++){
+                wasFound[i] = false;
+            }
+
+            for (int i = 1; i < endScan; i++) {
+                Matcher m = Pattern.compile("([\\/](wiki)+\\/)(([^:#]*?)(\"))")
+                        .matcher(strings[i]);
+                while (m.find()) {
+                    String found = m.group().substring(0, m.group().length() - 1);
+                    //url can't equal page we are on
+                    if (!seedUrl.equals(found)) {
+                        if (!firstTime) {
+                            if (hashTopics.containsKey(found)) {
+                                //check if duplicate
+                                if (wasFound[hashTopics.get(found)]==false) {
+                                    matches.add(seedUrl + " " + found);
+                                    numFound++;
+                                    wasFound[hashTopics.get(found)]=true;
+                                }
+                            }
+                        } else {
+                            boolean isNew = true;
+
+                                if (hashTopics.containsKey(found)) {
+                                    isNew = false;
+                                }
+
+                            if (isNew) {
+                                matches.add(seedUrl + " " + m.group().substring(0, m.group().length() - 1));
+                                hashTopics.put(found,hashTopics.size());
+                                numFound++;
+                            }
+
                         }
                     }
+                    if (max == numFound + 1) {
+                        break;
+                    }
                 }
-                else {
-                    matches.add(seedUrl + " " + m.group().substring(0, m.group().length() - 1));
-                    numFound++;
+                if (max == numFound + 1) {
+                    break;
                 }
-                if (max == numFound) {break;}
             }
-            if (max == numFound) {break;}
-        }
+
+
         return matches;
     }
     /*
@@ -109,24 +155,66 @@ file
             BufferedWriter bw = new BufferedWriter(new FileWriter(file));
             String html = gethtml();
             links = extractLinks(html);
-            for(String link:links) {
-                bw.write(link+" ");
+            if(topics.size()==0) {
+                bw.write(links.size()+1 + "");
                 bw.newLine();
-            }
+                for (String link : links) {
 
-            for(String link: links){
-                seedUrl = link.split(" ")[1];
-                html = gethtml();
-                links2 = extractLinks(html);
-                for(String link2:links2) {
-                    bw.write(link2+" ");
+                    bw.write(link + " ");
                     bw.newLine();
                 }
+
+                for (String link : links) {
+                    seedUrl = link.split(" ")[1];
+                    html = gethtml();
+                    links2 = extractLinks(html);
+                    for (String link2 : links2) {
+                        bw.write(link2 + " ");
+                        bw.newLine();
+
+                    }
+                }
+            }//if there are topics
+            else {
+                int topicsNum = 0;
+                for (String topic : topics) {
+                    if (html.contains(topic)) {
+                        topicsNum++;
+                    }
+                }
+                if (topics.size() == topicsNum) {
+                    bw.write(links.size()+1 + "");
+                    bw.newLine();
+                    for (String link : links) {
+                        bw.write(link);
+                        bw.newLine();
+
+                    }
+                    for (String link : links) {
+                        seedUrl = link.split(" ")[1];
+                        html = gethtml();
+                        int topicsNum2 = 0;
+                        for (String topic : topics) {
+                            if (html.contains(topic)) {
+                                topicsNum2++;
+                            }
+                        }
+                        if (topics.size() == topicsNum2) {
+                            links2 = extractLinks(html);
+                            for (String link2 : links2) {
+                                bw.write(link2 + " ");
+                                bw.newLine();
+
+                            }
+                        }
+                    }
+                }
+                else {bw.write("0"); bw.newLine();}
             }
             bw.close();
         }
         catch(Exception e){
-            System.out.println("Error "+e.toString());
+            e.printStackTrace();
         }
 
     }
@@ -149,7 +237,7 @@ file
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
             String inputLine =null;
             while ((inputLine = br.readLine()) != null){
-                html += inputLine;
+                html += inputLine+"\n";
             }
             br.close();
 
@@ -159,5 +247,3 @@ file
         return html;
     }
 }
-
-
