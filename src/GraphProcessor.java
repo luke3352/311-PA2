@@ -29,6 +29,7 @@ public class GraphProcessor {
     private ArrayList<String> vertices;
     private int numOfVertices;
     private int diameter;
+    private int maxShortestPath;
     private double[][] dist;
 
     // NOTE: graphData should be an absolute file path
@@ -37,6 +38,7 @@ public class GraphProcessor {
         vertices = new ArrayList<>();
         numOfVertices = 0;
         diameter = 0;
+        maxShortestPath = 0;
         File file = new File(graphData);
 
         try {
@@ -56,49 +58,41 @@ public class GraphProcessor {
         // initialize distance array since numOfVertices has been now set
         dist = new double[numOfVertices][numOfVertices];
 
-        if (checkIfStronglyConnected()) {
-            // Use flyod warshall algorithm to calculate the distances
+        // Use flyod warshall algorithm to calculate the distances
+        // initialize the distance matrix
+        for (int i = 0; i < numOfVertices; i++) {
+            for (int j = 0; j < numOfVertices; j++) {
+                if (i == j) {
+                    dist[i][j] = 0;
+                } else {
+                    dist[i][j] = adjList.get(vertices.get(i)).contains(vertices.get(j)) ? 1 : Double.POSITIVE_INFINITY;
+                }
+            }
+        }
 
-            // initialize the distance matrix
+        for (int k = 0; k < numOfVertices; k++) {
+            // Pick all vertices as source one by one
             for (int i = 0; i < numOfVertices; i++) {
+                // Pick all vertices as destination for the
+                // above picked source
                 for (int j = 0; j < numOfVertices; j++) {
-                    if (i == j) {
-                        dist[i][j] = 0;
-                    } else {
-                        dist[i][j] = adjList.get(vertices.get(i)).contains(vertices.get(j)) ? 1 : Double.POSITIVE_INFINITY;
+                    // If vertex k is on the shortest path from
+                    // i to j, then update the value of dist[i][j]
+                    if (dist[i][k] + dist[k][j] < dist[i][j]) {
+                        dist[i][j] = dist[i][k] + dist[k][j];
+                    }
+                    if (dist[i][j] > maxShortestPath && dist[i][j] != Double.POSITIVE_INFINITY) {
+                        maxShortestPath = (int) dist[i][j];
                     }
                 }
             }
-
-            for (int k = 0; k < numOfVertices; k++) {
-                // Pick all vertices as source one by one
-                for (int i = 0; i < numOfVertices; i++) {
-                    // Pick all vertices as destination for the
-                    // above picked source
-                    for (int j = 0; j < numOfVertices; j++) {
-                        // If vertex k is on the shortest path from
-                        // i to j, then update the value of dist[i][j]
-                        if (dist[i][k] + dist[k][j] < dist[i][j]) {
-                            dist[i][j] = dist[i][k] + dist[k][j];
-                        }
-                        if (dist[i][j] > diameter && dist[i][j] != Double.POSITIVE_INFINITY) {
-                            diameter = (int) dist[i][j];
-                        }
-                    }
-                }
-            }
-            for (int i=0; i<numOfVertices; i++)
+        }
+        for (int i=0; i<numOfVertices; i++) {
+            for (int j=0; j<numOfVertices; j++)
             {
-                for (int j=0; j<numOfVertices; j++)
-                {
-                        System.out.print(dist[i][j]+"   ");
-                }
-                System.out.println();
+                System.out.print(dist[i][j]+"   ");
             }
-        } else {
-            // if graph is not strongly connected
-            // return 2n
-            diameter = 2*numOfVertices;
+            System.out.println();
         }
     }
 
@@ -111,6 +105,11 @@ public class GraphProcessor {
 
         if (!vertices.contains(dest)) {
             vertices.add(dest);
+        }
+
+        if (!adjList.containsKey(dest)) {
+            ArrayList<String> list = new ArrayList<>();
+            adjList.put(dest, list);
         }
 
         if (adjList.containsKey(src)) {
@@ -242,6 +241,13 @@ public class GraphProcessor {
     }
 
     public int diameter() {
+        if (checkIfStronglyConnected()) {
+            diameter = maxShortestPath;
+        } else {
+            // if graph is not strongly connected
+            // return 2n
+            diameter = 2*numOfVertices;
+        }
         return diameter;
     }
 
@@ -262,9 +268,9 @@ public class GraphProcessor {
     }
 
     public static void main(String args[]) {
-        GraphProcessor gp = new GraphProcessor("./GraphData.Txt");
-        System.out.println(gp.bfsPath("Ames","Ames"));
+        GraphProcessor gp = new GraphProcessor("./File.Txt");
+        System.out.println(gp.bfsPath("/wiki/Category_theory","/wiki/Herman_Hollerith"));
         System.out.println(gp.diameter());
-        System.out.println(gp.centrality("Ames"));
+        System.out.println(gp.centrality("/wiki/Computer_Science"));
     }
 }

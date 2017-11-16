@@ -2856,4 +2856,4 @@
 /wiki/Computer_performance /wiki/Information_theory 
 /wiki/Computer_performance /wiki/World_War_II 
 /wiki/Computer_performance /wiki/Computational_complexity_theory 
-/wiki/Throughput /wiki/Data_compression 
+/wiki/Throughput /wiki/Data_compression
