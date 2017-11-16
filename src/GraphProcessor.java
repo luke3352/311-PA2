@@ -47,7 +47,7 @@ public class GraphProcessor {
                 numOfVertices = Integer.parseInt(sc.next());
             }
 
-            while (sc.hasNextLine()){
+            while (sc.hasNext()){
                 addEdge(sc.next(), sc.next());
             }
             sc.close();

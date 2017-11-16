@@ -716,10 +716,11 @@
 /wiki/History_of_programming_languages /wiki/History_of_computing_hardware 
 /wiki/History_of_programming_languages /wiki/Timeline_of_computing 
 /wiki/List_of_pioneers_in_computer_science /wiki/Electronics 
+/wiki/List_of_pioneers_in_computer_science /wiki/Algorithm 
 /wiki/List_of_pioneers_in_computer_science /wiki/Harvard_Mark_I 
 /wiki/List_of_pioneers_in_computer_science /wiki/Ada_Lovelace 
-/wiki/List_of_pioneers_in_computer_science /wiki/Charles_Babbage 
 /wiki/List_of_pioneers_in_computer_science /wiki/Analytical_Engine 
+/wiki/List_of_pioneers_in_computer_science /wiki/Charles_Babbage 
 /wiki/List_of_pioneers_in_computer_science /wiki/Distributed_computing 
 /wiki/List_of_pioneers_in_computer_science /wiki/IBM 
 /wiki/List_of_pioneers_in_computer_science /wiki/Linguistics 
@@ -2856,4 +2857,4 @@
 /wiki/Computer_performance /wiki/Information_theory 
 /wiki/Computer_performance /wiki/World_War_II 
 /wiki/Computer_performance /wiki/Computational_complexity_theory 
-/wiki/Throughput /wiki/Data_compression
+/wiki/Throughput /wiki/Data_compression 
