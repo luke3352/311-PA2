@@ -28,7 +28,7 @@ public class WikiCrawlerTest {
         }
     }
 
-    @Test
+  /*  @Test
     public void graphConstructorTest(){
         GraphProcessor graph = new GraphProcessor("File.txt");
         ArrayList<String> vertices = graph.vertices;
@@ -36,7 +36,7 @@ public class WikiCrawlerTest {
             System.out.println(graph.outDegree(vertice));
         }
     }
-
+*/
     @Test
     public void outDegreeTest(){
         GraphProcessor graph = new GraphProcessor("GraphData.txt");

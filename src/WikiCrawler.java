@@ -107,29 +107,29 @@ public class WikiCrawler
 
     public void crawl()
     {
-        ArrayList<String> links = new ArrayList<>();
-        ArrayList<String> links2 = new ArrayList<>();
+        ArrayList<String> queue = new ArrayList<>();
+        ArrayList<String> queue2 = new ArrayList<>();
         File file = new File(fileName);
         try {
 
             BufferedWriter bw = new BufferedWriter(new FileWriter(file));
             String html = gethtml();
-            links = extractLinks(html);
+            queue = extractLinks(html);
             if(topics.size()==0) {
-                bw.write(links.size()+1 + "");
+                bw.write(queue.size()+1 + "");
                 bw.newLine();
-                for (String link : links) {
+                for (String link : queue) {
 
                     bw.write(link + " ");
                     bw.newLine();
                 }
 
-                for (String link : links) {
+                for (String link : queue) {
                     seedUrl = link.split(" ")[1];
                     html = gethtml();
-                    links2 = extractLinks(html);
+                    queue2 = extractLinks(html);
 
-                    for (String link2 : links2) {
+                    for (String link2 : queue2) {
                         bw.write(link2 + " ");
                          bw.newLine();
 
@@ -144,14 +144,14 @@ public class WikiCrawler
                     }
                 }
                 if (topics.size() == topicsNum) {
-                    bw.write(links.size()+1 + "");
+                    bw.write(queue.size()+1 + "");
                     bw.newLine();
-                    for (String link : links) {
+                    for (String link : queue) {
                         bw.write(link);
                         bw.newLine();
 
                     }
-                    for (String link : links) {
+                    for (String link : queue) {
                         seedUrl = link.split(" ")[1];
                         html = gethtml();
                         int topicsNum2 = 0;
@@ -161,8 +161,8 @@ public class WikiCrawler
                             }
                         }
                         if (topics.size() == topicsNum2) {
-                            links2 = extractLinks(html);
-                            for (String link2 : links2) {
+                            queue2 = extractLinks(html);
+                            for (String link2 : queue2) {
                                 bw.write(link2 + " ");
                                bw.newLine();
                             }
